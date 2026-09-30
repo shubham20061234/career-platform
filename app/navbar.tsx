@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -51,14 +50,10 @@ export default function Navbar() {
       loadProfile();
     }
 
-    window.addEventListener(
-      "profile-updated",
-      handleProfileUpdate
-    );
+    window.addEventListener("profile-updated", handleProfileUpdate);
 
     return () => {
       subscription.unsubscribe();
-
       window.removeEventListener(
         "profile-updated",
         handleProfileUpdate
@@ -67,42 +62,59 @@ export default function Navbar() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+    <header className="sticky top-0 z-50 w-full border-b border-[#e2e8f0] bg-white/95 backdrop-blur-md">
+      <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between px-6">
 
+        {/* BRAND */}
         <Link
           href="/"
-          className="text-xl font-bold tracking-tight"
+          className="group flex items-center gap-3"
         >
-          Career<span className="text-blue-600">Platform</span>
+          {/* LOGO */}
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-xs font-black tracking-tight text-white shadow-md shadow-blue-600/20 transition group-hover:scale-105 group-hover:bg-blue-700">
+            CP
+          </div>
+
+          {/* NAME */}
+          <div className="leading-none">
+            <div className="text-[17px] font-extrabold tracking-tight text-[#111827]">
+              Career
+              <span className="text-blue-600">Platform</span>
+            </div>
+
+            <div className="mt-1 text-[9px] font-bold uppercase tracking-[0.2em] text-[#64748b]">
+              Build Your Future
+            </div>
+          </div>
         </Link>
 
-        <nav className="flex items-center gap-3 sm:gap-6">
+        {/* NAVIGATION */}
+        <nav className="flex items-center gap-2 sm:gap-4">
 
           <Link
             href="/"
-            className="hidden text-sm font-medium text-black/70 hover:text-blue-600 sm:block"
+            className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-[#475569] transition hover:bg-blue-50 hover:text-blue-600 sm:block"
           >
             Home
           </Link>
 
           <Link
             href="/blogs"
-            className="hidden text-sm font-medium text-black/70 hover:text-blue-600 sm:block"
+            className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-[#475569] transition hover:bg-blue-50 hover:text-blue-600 sm:block"
           >
             Blogs
           </Link>
 
           <Link
             href="/resources"
-            className="hidden text-sm font-medium text-black/70 hover:text-blue-600 sm:block"
+            className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-[#475569] transition hover:bg-blue-50 hover:text-blue-600 sm:block"
           >
             Resources
           </Link>
 
           <Link
             href="/videos"
-            className="hidden text-sm font-medium text-black/70 hover:text-blue-600 sm:block"
+            className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-[#475569] transition hover:bg-blue-50 hover:text-blue-600 sm:block"
           >
             Videos
           </Link>
@@ -111,19 +123,21 @@ export default function Navbar() {
             <>
               {user ? (
                 <>
+                  {/* ADMIN */}
                   {isAdmin && (
                     <Link
                       href="/admin"
-                      className="hidden rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-600 sm:block"
+                      className="hidden rounded-xl bg-[#111827] px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-600 hover:shadow-md hover:shadow-blue-600/20 sm:block"
                     >
                       Admin Dashboard
                     </Link>
                   )}
 
+                  {/* PROFILE */}
                   <Link
                     href="/profile"
                     title={fullName || user.email || "Profile"}
-                    className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-black/10 bg-black text-sm font-bold text-white transition hover:ring-2 hover:ring-blue-500 hover:ring-offset-2"
+                    className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-blue-600 text-sm font-bold text-white shadow-md ring-1 ring-[#dbe3ee] transition hover:ring-2 hover:ring-blue-500 hover:ring-offset-2"
                   >
                     {avatarUrl ? (
                       <img
@@ -144,16 +158,18 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
+                  {/* LOGIN */}
                   <Link
                     href="/login"
-                    className="text-sm font-medium text-black/70 hover:text-blue-600"
+                    className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-[#475569] transition hover:bg-blue-50 hover:text-blue-600 sm:block"
                   >
                     Login
                   </Link>
 
+                  {/* SIGN UP */}
                   <Link
                     href="/signup"
-                    className="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-black/80"
+                    className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-600/15 transition hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-600/20"
                   >
                     Sign Up
                   </Link>
@@ -161,7 +177,6 @@ export default function Navbar() {
               )}
             </>
           )}
-
         </nav>
       </div>
     </header>

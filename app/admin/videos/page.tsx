@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { supabase } from "@/src/lib/supabase";
 
 type Video = {
@@ -255,18 +256,16 @@ export default function VideosAdminPage() {
         await loadVideos();
       }
     } else {
-      const { error } = await supabase
-        .from("videos")
-        .insert({
-          title: form.title,
-          slug: form.slug,
-          description: form.description,
-          category: form.category,
-          video_url: form.video_url,
-          thumbnail_url: form.thumbnail_url || null,
-          author_id: user.id,
-          published: false,
-        });
+      const { error } = await supabase.from("videos").insert({
+        title: form.title,
+        slug: form.slug,
+        description: form.description,
+        category: form.category,
+        video_url: form.video_url,
+        thumbnail_url: form.thumbnail_url || null,
+        author_id: user.id,
+        published: false,
+      });
 
       if (error) {
         alert("CREATE ERROR: " + error.message);
@@ -316,7 +315,6 @@ export default function VideosAdminPage() {
     }
 
     alert("Video deleted successfully!");
-
     await loadVideos();
   }
 
@@ -337,48 +335,84 @@ export default function VideosAdminPage() {
     await loadVideos();
   }
 
+  const inputClass =
+    "w-full rounded-xl border border-black/10 bg-[#f7f7f4] px-4 py-3.5 text-sm font-medium text-[#111] placeholder:text-black/25 outline-none transition-all duration-300 focus:border-[#163A5F] focus:bg-white focus:ring-4 focus:ring-[#163A5F]/10";
+
   return (
-    <main className="min-h-screen bg-[#f8f8f6] p-6 md:p-10">
-      <div className="mx-auto max-w-6xl">
+    <main className="min-h-screen overflow-hidden bg-[#f5f5f2] text-[#111]">
+      {/* Background Grid */}
+      <div
+        className="pointer-events-none fixed inset-0 opacity-[0.035]"
+        style={{
+          backgroundImage:
+            "linear-gradient(#111 1px, transparent 1px), linear-gradient(90deg, #111 1px, transparent 1px)",
+          backgroundSize: "70px 70px",
+        }}
+      />
+
+      {/* Blue Glow */}
+      <div className="pointer-events-none fixed left-1/2 top-[8%] h-[550px] w-[550px] -translate-x-1/2 rounded-full bg-blue-500/10 blur-[130px]" />
+
+      <div className="relative mx-auto max-w-6xl px-5 py-14 md:px-8">
+        {/* HEADER */}
+        <div className="mb-8 flex items-center justify-center gap-3">
+          <span className="h-px w-10 bg-[#163A5F]" />
+
+          <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#163A5F]">
+            Career Platform
+          </span>
+
+          <span className="h-px w-10 bg-[#163A5F]" />
+        </div>
 
         <div className="mb-10">
-          <p className="text-sm font-semibold uppercase tracking-wider text-blue-600">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-[#163A5F]">
             Admin Panel
           </p>
 
-          <h1 className="mt-2 text-4xl font-bold">
+          <h1 className="text-4xl font-semibold tracking-[-0.05em] md:text-6xl">
             Videos
+            <span className="text-black/20">.</span>
           </h1>
 
-          <p className="mt-3 text-black/60">
-            Upload or add video links and manage career videos.
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-black/45 md:text-base">
+            Upload videos, add external video links and manage
+            career-focused video content.
           </p>
         </div>
 
         {/* FORM */}
+        <section className="rounded-[2rem] border border-black/10 bg-white/90 p-6 shadow-[0_30px_100px_rgba(0,0,0,0.08)] backdrop-blur-xl md:p-9">
+          <div className="mb-8 flex flex-col justify-between gap-5 border-b border-black/10 pb-7 md:flex-row md:items-center">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#163A5F]">
+                Content Editor
+              </p>
 
-        <section className="rounded-2xl border bg-white p-6 shadow-sm">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-2xl font-bold">
-              {editingId ? "Edit Video" : "Create Video"}
-            </h2>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+                {editingId ? "Edit Video" : "Create Video"}
+              </h2>
+
+              <p className="mt-2 text-sm leading-6 text-black/45">
+                Fill in the details below to manage your video.
+              </p>
+            </div>
 
             {editingId && (
               <button
+                type="button"
                 onClick={resetForm}
-                className="rounded-lg border px-4 py-2 text-sm"
+                className="rounded-xl border border-black/10 bg-[#f7f7f4] px-5 py-3 text-sm font-bold text-black transition-all duration-300 hover:border-[#163A5F] hover:bg-[#163A5F] hover:text-white"
               >
                 Cancel Edit
               </button>
             )}
           </div>
 
-          <div className="grid gap-5">
-
+          <div className="grid gap-6">
             {/* TITLE */}
-
             <div>
-              <label className="mb-2 block text-sm font-semibold">
+              <label className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-black/60">
                 Title
               </label>
 
@@ -392,14 +426,13 @@ export default function VideosAdminPage() {
                   })
                 }
                 placeholder="Example: How to Build a Strong Resume"
-                className="w-full rounded-xl border px-4 py-3 outline-none focus:border-blue-500"
+                className={inputClass}
               />
             </div>
 
             {/* SLUG */}
-
             <div>
-              <label className="mb-2 block text-sm font-semibold">
+              <label className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-black/60">
                 Slug
               </label>
 
@@ -415,14 +448,18 @@ export default function VideosAdminPage() {
                   })
                 }
                 placeholder="how-to-build-a-strong-resume"
-                className="w-full rounded-xl border px-4 py-3 outline-none focus:border-blue-500"
+                spellCheck={false}
+                className={`${inputClass} font-mono`}
               />
+
+              <p className="mt-2 text-xs leading-5 text-black/40">
+                Used as the URL-friendly identifier for this video.
+              </p>
             </div>
 
             {/* CATEGORY */}
-
             <div>
-              <label className="mb-2 block text-sm font-semibold">
+              <label className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-black/60">
                 Category
               </label>
 
@@ -436,14 +473,13 @@ export default function VideosAdminPage() {
                   })
                 }
                 placeholder="Career / Resume / Interview"
-                className="w-full rounded-xl border px-4 py-3 outline-none focus:border-blue-500"
+                className={inputClass}
               />
             </div>
 
             {/* DESCRIPTION */}
-
             <div>
-              <label className="mb-2 block text-sm font-semibold">
+              <label className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-black/60">
                 Description
               </label>
 
@@ -457,53 +493,64 @@ export default function VideosAdminPage() {
                 }
                 placeholder="Describe this video..."
                 rows={5}
-                className="w-full rounded-xl border px-4 py-3 outline-none focus:border-blue-500"
+                className={`${inputClass} resize-none leading-6`}
               />
             </div>
 
-            {/* VIDEO */}
+            {/* VIDEO SECTION */}
+            <div className="rounded-[1.5rem] border border-black/10 bg-[#f7f7f4] p-5 md:p-6">
+              <div className="mb-5">
+                <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#163A5F]">
+                  Video Source
+                </p>
 
-            <div className="rounded-2xl border border-black/10 bg-[#f8f8f6] p-5">
-              <label className="mb-4 block text-sm font-semibold">
-                Video
-              </label>
+                <p className="mt-2 text-sm leading-6 text-black/45">
+                  Upload your own video or paste an external video URL.
+                </p>
+              </div>
 
               <div className="grid gap-5 md:grid-cols-2">
-
                 {/* UPLOAD */}
-
-                <div className="rounded-xl border bg-white p-4">
-                  <p className="text-sm font-semibold">
+                <div className="rounded-[1.25rem] border border-black/10 bg-white p-5 shadow-sm">
+                  <p className="text-sm font-bold text-black">
                     Upload Video
                   </p>
 
-                  <p className="mt-1 text-xs text-black/50">
-                    Upload MP4 or another supported video file.
+                  <p className="mt-2 text-xs leading-5 text-black/45">
+                    MP4 or another supported video file.
+                    Maximum size: 200MB.
                   </p>
 
-                  <input
-                    type="file"
-                    accept="video/*"
-                    onChange={uploadVideo}
-                    disabled={uploadingVideo}
-                    className="mt-4 w-full rounded-xl border bg-white px-4 py-3"
-                  />
+                  <label className="mt-4 flex cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-black/10 bg-[#f7f7f4] px-4 py-5 text-sm font-bold text-black transition-all duration-300 hover:border-[#163A5F] hover:bg-[#163A5F]/5">
+                    <span>
+                      {uploadingVideo
+                        ? "Uploading..."
+                        : "Choose Video File"}
+                    </span>
+
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={uploadVideo}
+                      disabled={uploadingVideo}
+                      className="hidden"
+                    />
+                  </label>
 
                   {uploadingVideo && (
-                    <p className="mt-2 text-sm text-blue-600">
+                    <p className="mt-3 text-sm font-bold text-[#163A5F]">
                       Uploading video...
                     </p>
                   )}
                 </div>
 
                 {/* URL */}
-
-                <div className="rounded-xl border bg-white p-4">
-                  <p className="text-sm font-semibold">
+                <div className="rounded-[1.25rem] border border-black/10 bg-white p-5 shadow-sm">
+                  <p className="text-sm font-bold text-black">
                     Video URL
                   </p>
 
-                  <p className="mt-1 text-xs text-black/50">
+                  <p className="mt-2 text-xs leading-5 text-black/45">
                     YouTube, YouTube Shorts, Vimeo or direct video URL.
                   </p>
 
@@ -517,144 +564,189 @@ export default function VideosAdminPage() {
                       })
                     }
                     placeholder="https://www.youtube.com/watch?v=..."
-                    className="mt-4 w-full rounded-xl border px-4 py-3 outline-none focus:border-blue-500"
+                    spellCheck={false}
+                    autoComplete="off"
+                    className={`${inputClass} mt-4 font-mono text-[13px]`}
                   />
+
+                  <p className="mt-2 text-[11px] leading-5 text-black/40">
+                    Paste the complete URL including https://
+                  </p>
                 </div>
               </div>
 
+              {/* CURRENT URL */}
               {form.video_url && (
-                <div className="mt-5">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-black/40">
+                <div className="mt-5 rounded-[1.25rem] border border-[#163A5F]/15 bg-[#163A5F]/5 p-5">
+                  <p className="mb-2 text-xs font-bold uppercase tracking-[0.15em] text-[#163A5F]">
                     Current Video URL
                   </p>
 
-                  <div className="break-all rounded-xl bg-black px-4 py-3 text-sm text-white/80">
+                  <div className="overflow-x-auto rounded-xl border border-black/10 bg-white px-4 py-3 font-mono text-xs leading-6 text-black">
                     {form.video_url}
                   </div>
 
-                  <p className="mt-2 text-xs text-black/40">
-                    If you enter a URL after uploading a video, the URL will
-                    replace the uploaded video for this record.
+                  <p className="mt-2 text-xs leading-5 text-black/45">
+                    If you enter a URL after uploading a video,
+                    this URL will replace the uploaded video for this record.
                   </p>
                 </div>
               )}
             </div>
 
             {/* THUMBNAIL */}
+            <div className="rounded-[1.5rem] border border-black/10 bg-[#f7f7f4] p-5 md:p-6">
+              <div className="mb-4">
+                <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#163A5F]">
+                  Thumbnail
+                </p>
 
-            <div>
-              <label className="mb-2 block text-sm font-semibold">
-                Thumbnail
+                <p className="mt-2 text-sm leading-6 text-black/45">
+                  Upload an image to use as the video thumbnail.
+                  Maximum size: 5MB.
+                </p>
+              </div>
+
+              <label className="flex cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-black/10 bg-white px-4 py-5 text-sm font-bold text-black transition-all duration-300 hover:border-[#163A5F] hover:bg-[#163A5F]/5">
+                <span>
+                  {uploadingImage
+                    ? "Uploading Thumbnail..."
+                    : "Choose Thumbnail Image"}
+                </span>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={uploadThumbnail}
+                  disabled={uploadingImage}
+                  className="hidden"
+                />
               </label>
 
-              <input
-                type="file"
-                accept="image/*"
-                onChange={uploadThumbnail}
-                disabled={uploadingImage}
-                className="w-full rounded-xl border bg-white px-4 py-3"
-              />
-
               {uploadingImage && (
-                <p className="mt-2 text-sm text-blue-600">
+                <p className="mt-3 text-sm font-bold text-[#163A5F]">
                   Uploading image...
                 </p>
               )}
 
               {form.thumbnail_url && (
-                <img
-                  src={form.thumbnail_url}
-                  alt="Video thumbnail"
-                  className="mt-4 h-48 w-full rounded-xl object-cover"
-                />
+                <div className="mt-5 overflow-hidden rounded-[1.25rem] border border-black/10 bg-white shadow-sm">
+                  <img
+                    src={form.thumbnail_url}
+                    alt="Video thumbnail"
+                    className="h-56 w-full object-cover"
+                  />
+                </div>
               )}
             </div>
 
             {/* SAVE */}
+            <div className="flex flex-wrap gap-3 border-t border-black/10 pt-6">
+              <button
+                type="button"
+                onClick={saveVideo}
+                disabled={
+                  saving ||
+                  uploadingVideo ||
+                  uploadingImage
+                }
+                className="group flex items-center gap-3 rounded-xl bg-[#163A5F] px-6 py-3.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(22,58,95,0.20)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#0B2742] hover:shadow-[0_18px_40px_rgba(22,58,95,0.28)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {saving
+                  ? "Saving..."
+                  : editingId
+                  ? "Update Video"
+                  : "Create Video"}
 
-            <button
-              onClick={saveVideo}
-              disabled={
-                saving ||
-                uploadingVideo ||
-                uploadingImage
-              }
-              className="rounded-xl bg-black px-5 py-3 font-semibold text-white hover:bg-black/80 disabled:opacity-50"
-            >
-              {saving
-                ? "Saving..."
-                : editingId
-                ? "Update Video"
-                : "Create Video"}
-            </button>
+                {!saving && (
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 transition-all duration-300 group-hover:translate-x-1 group-hover:bg-white/20">
+                    →
+                  </span>
+                )}
+              </button>
+
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="rounded-xl border border-black/10 bg-[#f7f7f4] px-6 py-3.5 text-sm font-bold text-black transition-all duration-300 hover:border-[#163A5F] hover:bg-[#163A5F] hover:text-white"
+                >
+                  Clear Form
+                </button>
+              )}
+            </div>
           </div>
         </section>
 
         {/* LIST */}
+        <section className="mt-12">
+          <div className="mb-6 flex items-end justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#163A5F]">
+                Library
+              </p>
 
-        <section className="mt-10">
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+                All Videos
+              </h2>
 
-          <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-2xl font-bold">
-              All Videos
-            </h2>
+              <p className="mt-2 text-sm leading-6 text-black/45">
+                Manage your published and unpublished videos.
+              </p>
+            </div>
 
-            <span className="rounded-full bg-black px-3 py-1 text-sm text-white">
+            <span className="rounded-full bg-[#163A5F] px-4 py-1.5 text-sm font-bold text-white shadow-lg shadow-[#163A5F]/15">
               {videos.length}
             </span>
           </div>
 
           {loading ? (
-            <div className="rounded-2xl border bg-white p-8">
+            <div className="rounded-[1.5rem] border border-black/10 bg-white/90 p-8 text-sm text-black/45 shadow-[0_20px_60px_rgba(0,0,0,0.05)] backdrop-blur-xl">
               Loading videos...
             </div>
           ) : videos.length === 0 ? (
-            <div className="rounded-2xl border bg-white p-8 text-black/60">
+            <div className="rounded-[1.5rem] border border-black/10 bg-white/90 p-8 text-sm text-black/45 shadow-[0_20px_60px_rgba(0,0,0,0.05)] backdrop-blur-xl">
               No videos uploaded yet.
             </div>
           ) : (
-            <div className="grid gap-5 md:grid-cols-2">
-
+            <div className="grid gap-6 md:grid-cols-2">
               {videos.map((video) => (
                 <article
                   key={video.id}
-                  className="overflow-hidden rounded-2xl border bg-white shadow-sm"
+                  className="overflow-hidden rounded-[1.75rem] border border-black/10 bg-white/90 shadow-[0_20px_60px_rgba(0,0,0,0.05)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_25px_70px_rgba(0,0,0,0.09)]"
                 >
-
                   {video.thumbnail_url ? (
                     <img
                       src={video.thumbnail_url}
                       alt={video.title}
-                      className="h-48 w-full object-cover"
+                      className="h-52 w-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-48 items-center justify-center bg-black text-5xl">
+                    <div className="flex h-52 items-center justify-center bg-[#163A5F] text-5xl text-white">
                       🎥
                     </div>
                   )}
 
                   <div className="p-6">
-
                     <div className="flex items-start justify-between gap-4">
-
                       <div>
-                        <h3 className="text-xl font-bold">
+                        <h3 className="text-xl font-semibold tracking-tight">
                           {video.title}
                         </h3>
 
                         {video.category && (
-                          <p className="mt-1 text-sm text-blue-600">
+                          <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-[#163A5F]">
                             {video.category}
                           </p>
                         )}
 
-                        <p className="mt-1 text-sm text-black/40">
+                        <p className="mt-2 break-all font-mono text-xs text-black/30">
                           /{video.slug}
                         </p>
                       </div>
 
                       <span
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${
                           video.published
                             ? "bg-green-100 text-green-700"
                             : "bg-yellow-100 text-yellow-700"
@@ -664,27 +756,27 @@ export default function VideosAdminPage() {
                           ? "Published"
                           : "Draft"}
                       </span>
-
                     </div>
 
                     {video.description && (
-                      <p className="mt-4 line-clamp-3 text-sm text-black/60">
+                      <p className="mt-4 line-clamp-3 text-sm leading-6 text-black/45">
                         {video.description}
                       </p>
                     )}
 
                     <div className="mt-6 flex flex-wrap gap-2">
-
                       <button
+                        type="button"
                         onClick={() => editVideo(video)}
-                        className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-black/5"
+                        className="rounded-lg border border-black/10 bg-[#f7f7f4] px-4 py-2 text-xs font-bold text-black transition-all duration-300 hover:border-[#163A5F] hover:bg-[#163A5F] hover:text-white"
                       >
                         Edit
                       </button>
 
                       <button
+                        type="button"
                         onClick={() => togglePublish(video)}
-                        className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                        className="rounded-lg bg-[#163A5F] px-4 py-2 text-xs font-bold text-white transition-all duration-300 hover:bg-[#0B2742]"
                       >
                         {video.published
                           ? "Unpublish"
@@ -692,20 +784,25 @@ export default function VideosAdminPage() {
                       </button>
 
                       <button
+                        type="button"
                         onClick={() => deleteVideo(video.id)}
-                        className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                        className="rounded-lg border border-red-200 bg-white px-4 py-2 text-xs font-bold text-red-600 transition-all duration-300 hover:bg-red-600 hover:text-white"
                       >
                         Delete
                       </button>
-
                     </div>
                   </div>
                 </article>
               ))}
-
             </div>
           )}
         </section>
+
+        {/* FOOTER */}
+        <div className="mt-12 flex items-center justify-between border-t border-black/10 pt-6 text-[9px] font-bold uppercase tracking-[0.18em] text-black/25">
+          <span>Knowledge • Experience • Growth</span>
+          <span>© Career Platform</span>
+        </div>
       </div>
     </main>
   );

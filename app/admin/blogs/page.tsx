@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -33,6 +32,9 @@ export default function AdminBlogsPage() {
   const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
+
+  const inputClass =
+    "w-full rounded-xl border border-[#cbd5e1] bg-white px-4 py-3 text-sm font-medium text-[#111827] placeholder:text-[#64748b] outline-none transition focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10";
 
   async function loadBlogs() {
     setLoading(true);
@@ -127,54 +129,62 @@ export default function AdminBlogsPage() {
 
     setUploading(true);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    if (!user) {
-      alert("Please login first.");
-      setUploading(false);
-      return;
-    }
+      if (!user) {
+        alert("Please login first.");
+        return;
+      }
 
-    const fileExtension =
-      file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const fileExtension =
+        file.name.split(".").pop()?.toLowerCase() || "jpg";
 
-    const fileName = `${crypto.randomUUID()}.${fileExtension}`;
-    const filePath = `${user.id}/${fileName}`;
+      const fileName = `${crypto.randomUUID()}.${fileExtension}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from("thumbnails")
-      .upload(filePath, file, {
-        cacheControl: "3600",
-        upsert: false,
-      });
+      const filePath = `${user.id}/${fileName}`;
 
-    if (uploadError) {
-      alert("IMAGE UPLOAD ERROR: " + uploadError.message);
-      setUploading(false);
-      return;
-    }
-
-    const { data: signedData, error: signedError } =
-      await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("thumbnails")
-        .createSignedUrl(filePath, 60 * 60);
+        .upload(filePath, file, {
+          cacheControl: "31536000",
+          upsert: false,
+          contentType: file.type,
+        });
 
-    if (signedError) {
-      alert("IMAGE URL ERROR: " + signedError.message);
+      if (uploadError) {
+        alert("IMAGE UPLOAD ERROR: " + uploadError.message);
+        return;
+      }
+
+      /*
+       * IMPORTANT:
+       * We use a permanent public URL instead of a signed URL.
+       * Signed URLs expire and can make old blog images disappear.
+       */
+      const { data: publicUrlData } = supabase.storage
+        .from("thumbnails")
+        .getPublicUrl(filePath);
+
+      if (!publicUrlData?.publicUrl) {
+        alert("IMAGE URL ERROR: Could not generate public image URL.");
+        return;
+      }
+
+      setForm((previous) => ({
+        ...previous,
+        cover_image_url: publicUrlData.publicUrl,
+      }));
+
+      alert("Cover image uploaded successfully!");
+    } catch (error) {
+      console.error("IMAGE UPLOAD ERROR:", error);
+      alert("Something went wrong while uploading the image.");
+    } finally {
       setUploading(false);
-      return;
     }
-
-    setForm((previous) => ({
-      ...previous,
-      cover_image_url: signedData.signedUrl,
-    }));
-
-    setUploading(false);
-
-    alert("Cover image uploaded successfully!");
   }
 
   async function createBlog() {
@@ -312,33 +322,33 @@ export default function AdminBlogsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f8f8f6] p-6 md:p-10">
+    <main className="min-h-screen bg-[#f7f9fc] px-6 py-8 md:px-10 md:py-10">
       <div className="mx-auto max-w-6xl">
 
         {/* HEADER */}
         <div className="mb-10">
-          <p className="text-sm font-semibold uppercase tracking-wider text-blue-600">
+          <p className="text-sm font-bold uppercase tracking-[0.18em] text-blue-600">
             Admin Panel
           </p>
 
-          <h1 className="mt-2 text-4xl font-bold">
+          <h1 className="mt-2 text-4xl font-extrabold tracking-tight text-[#111827]">
             Blog Management
           </h1>
 
-          <p className="mt-3 text-black/60">
+          <p className="mt-3 text-[15px] font-medium text-[#475569]">
             Create, edit, publish and manage your career blogs.
           </p>
         </div>
 
         {/* FORM */}
-        <section className="rounded-3xl border bg-white p-6 shadow-sm md:p-8">
+        <section className="rounded-3xl border border-[#dfe5ee] bg-white p-6 shadow-sm md:p-8">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div>
-              <h2 className="text-2xl font-bold">
+              <h2 className="text-2xl font-extrabold text-[#111827]">
                 {editingId ? "Edit Blog" : "Create New Blog"}
               </h2>
 
-              <p className="mt-1 text-sm text-black/50">
+              <p className="mt-1 text-sm font-medium text-[#64748b]">
                 {editingId
                   ? "Update your existing blog."
                   : "Add a new blog to your platform."}
@@ -348,18 +358,18 @@ export default function AdminBlogsPage() {
             {editingId && (
               <button
                 onClick={resetForm}
-                className="rounded-xl border px-5 py-2.5 text-sm font-semibold hover:bg-gray-50"
+                className="rounded-xl border border-[#cbd5e1] px-5 py-2.5 text-sm font-bold text-[#334155] transition hover:bg-[#f8fafc]"
               >
                 Cancel Edit
               </button>
             )}
           </div>
 
-          <div className="mt-7 grid gap-5">
+          <div className="mt-7 grid gap-6">
 
             {/* TITLE */}
             <div>
-              <label className="mb-2 block text-sm font-semibold">
+              <label className="mb-2 block text-sm font-bold text-[#111827]">
                 Blog Title
               </label>
 
@@ -370,13 +380,13 @@ export default function AdminBlogsPage() {
                 onChange={(e) =>
                   handleTitleChange(e.target.value)
                 }
-                className="w-full rounded-xl border p-3 outline-none focus:border-blue-500"
+                className={inputClass}
               />
             </div>
 
-            {/* AUTO SLUG */}
+            {/* SLUG */}
             <div>
-              <label className="mb-2 block text-sm font-semibold">
+              <label className="mb-2 block text-sm font-bold text-[#111827]">
                 Slug
               </label>
 
@@ -384,21 +394,21 @@ export default function AdminBlogsPage() {
                 type="text"
                 value={form.slug}
                 readOnly
-                className="w-full rounded-xl border bg-gray-50 p-3 text-black/60 outline-none"
+                className="w-full rounded-xl border border-[#cbd5e1] bg-[#f8fafc] px-4 py-3 font-mono text-sm font-medium text-[#334155] outline-none"
               />
 
-              <p className="mt-1 text-xs text-black/40">
+              <p className="mt-2 text-xs font-semibold text-[#475569]">
                 Public URL: /blogs/{form.slug || "your-slug"}
               </p>
 
-              <p className="mt-1 text-xs text-green-600">
+              <p className="mt-1 text-xs font-semibold text-green-600">
                 Slug is automatically generated from the blog title.
               </p>
             </div>
 
             {/* CATEGORY */}
             <div>
-              <label className="mb-2 block text-sm font-semibold">
+              <label className="mb-2 block text-sm font-bold text-[#111827]">
                 Category
               </label>
 
@@ -409,44 +419,64 @@ export default function AdminBlogsPage() {
                 onChange={(e) =>
                   updateForm("category", e.target.value)
                 }
-                className="w-full rounded-xl border p-3 outline-none focus:border-blue-500"
+                className={inputClass}
               />
             </div>
 
             {/* COVER IMAGE */}
             <div>
-              <label className="mb-2 block text-sm font-semibold">
+              <label className="mb-2 block text-sm font-bold text-[#111827]">
                 Cover Image
               </label>
 
-              <input
-                type="file"
-                accept="image/*"
-                onChange={uploadCoverImage}
-                disabled={uploading}
-                className="block w-full rounded-xl border p-3 text-sm"
-              />
+              <div className="rounded-2xl border border-dashed border-[#cbd5e1] bg-[#f8fafc] p-4">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={uploadCoverImage}
+                  disabled={uploading}
+                  className="block w-full text-sm font-medium text-[#334155] file:mr-4 file:rounded-xl file:border-0 file:bg-blue-600 file:px-4 file:py-2.5 file:font-bold file:text-white file:transition hover:file:bg-blue-700 disabled:cursor-not-allowed"
+                />
+
+                <p className="mt-2 text-xs font-medium text-[#64748b]">
+                  JPG, PNG, WEBP or other image formats. Maximum 5MB.
+                </p>
+              </div>
 
               {uploading && (
-                <p className="mt-2 text-sm text-blue-600">
-                  Uploading image...
-                </p>
+                <div className="mt-3 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
+                  <p className="text-sm font-bold text-blue-700">
+                    Uploading image...
+                  </p>
+                </div>
               )}
 
               {form.cover_image_url && (
-                <div className="mt-4 overflow-hidden rounded-2xl border">
+                <div className="mt-5 overflow-hidden rounded-2xl border border-[#dfe5ee] bg-[#f8fafc]">
+                  <div className="border-b border-[#e5e7eb] px-4 py-3">
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#64748b]">
+                      Cover Preview
+                    </p>
+                  </div>
+
                   <img
                     src={form.cover_image_url}
                     alt="Cover preview"
-                    className="h-56 w-full object-cover"
+                    className="h-64 w-full object-cover"
                   />
+
+                  <div className="border-t border-[#e5e7eb] px-4 py-3">
+                    <p className="break-all text-xs font-medium text-[#64748b]">
+                      {form.cover_image_url}
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
 
             {/* EXCERPT */}
             <div>
-              <label className="mb-2 block text-sm font-semibold">
+              <label className="mb-2 block text-sm font-bold text-[#111827]">
                 Short Description
               </label>
 
@@ -457,13 +487,13 @@ export default function AdminBlogsPage() {
                   updateForm("excerpt", e.target.value)
                 }
                 rows={4}
-                className="w-full resize-y rounded-xl border p-3 outline-none focus:border-blue-500"
+                className={`${inputClass} resize-y`}
               />
             </div>
 
             {/* CONTENT */}
             <div>
-              <label className="mb-2 block text-sm font-semibold">
+              <label className="mb-2 block text-sm font-bold text-[#111827]">
                 Blog Content
               </label>
 
@@ -474,7 +504,7 @@ export default function AdminBlogsPage() {
                   updateForm("content", e.target.value)
                 }
                 rows={14}
-                className="w-full resize-y rounded-xl border p-3 outline-none focus:border-blue-500"
+                className={`${inputClass} resize-y leading-7`}
               />
             </div>
 
@@ -483,7 +513,7 @@ export default function AdminBlogsPage() {
               <button
                 onClick={editingId ? updateBlog : createBlog}
                 disabled={saving || uploading}
-                className="rounded-xl bg-black px-7 py-3 font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-xl bg-[#111827] px-7 py-3 font-bold text-white shadow-sm transition hover:bg-blue-600 hover:shadow-md hover:shadow-blue-600/20 disabled:cursor-not-allowed disabled:bg-[#64748b]"
               >
                 {saving
                   ? "Saving..."
@@ -496,7 +526,7 @@ export default function AdminBlogsPage() {
                 <button
                   onClick={resetForm}
                   disabled={saving}
-                  className="rounded-xl border px-7 py-3 font-semibold hover:bg-gray-50"
+                  className="rounded-xl border border-[#cbd5e1] px-7 py-3 font-bold text-[#334155] transition hover:bg-[#f8fafc]"
                 >
                   Cancel
                 </button>
@@ -508,27 +538,29 @@ export default function AdminBlogsPage() {
         {/* BLOG LIST */}
         <section className="mt-10">
           <div className="mb-5">
-            <h2 className="text-2xl font-bold">
+            <h2 className="text-2xl font-extrabold text-[#111827]">
               Existing Blogs
             </h2>
 
-            <p className="mt-1 text-sm text-black/50">
+            <p className="mt-1 text-sm font-medium text-[#64748b]">
               {blogs.length} blog
               {blogs.length !== 1 ? "s" : ""} found
             </p>
           </div>
 
           {loading ? (
-            <div className="rounded-2xl border bg-white p-8 text-center">
-              Loading blogs...
+            <div className="rounded-2xl border border-[#dfe5ee] bg-white p-8 text-center">
+              <p className="font-semibold text-[#334155]">
+                Loading blogs...
+              </p>
             </div>
           ) : blogs.length === 0 ? (
-            <div className="rounded-2xl border bg-white p-8 text-center">
-              <p className="font-semibold">
+            <div className="rounded-2xl border border-[#dfe5ee] bg-white p-8 text-center">
+              <p className="font-bold text-[#111827]">
                 No blogs created yet.
               </p>
 
-              <p className="mt-1 text-sm text-black/50">
+              <p className="mt-1 text-sm font-medium text-[#64748b]">
                 Create your first blog using the form above.
               </p>
             </div>
@@ -537,28 +569,34 @@ export default function AdminBlogsPage() {
               {blogs.map((blog) => (
                 <article
                   key={blog.id}
-                  className="rounded-2xl border bg-white p-5 shadow-sm"
+                  className="rounded-2xl border border-[#dfe5ee] bg-white p-5 shadow-sm transition hover:shadow-md"
                 >
                   <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
 
                     {/* IMAGE */}
-                    {blog.cover_image_url && (
+                    {blog.cover_image_url ? (
                       <img
                         src={blog.cover_image_url}
                         alt={blog.title}
-                        className="h-28 w-full rounded-xl object-cover md:w-44"
+                        className="h-32 w-full rounded-xl border border-[#e5e7eb] object-cover md:w-48"
                       />
+                    ) : (
+                      <div className="flex h-32 w-full items-center justify-center rounded-xl border border-dashed border-[#cbd5e1] bg-[#f8fafc] md:w-48">
+                        <span className="text-xs font-bold uppercase tracking-wider text-[#94a3b8]">
+                          No Image
+                        </span>
+                      </div>
                     )}
 
                     {/* INFO */}
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-xl font-bold">
+                        <h3 className="text-xl font-extrabold text-[#111827]">
                           {blog.title}
                         </h3>
 
                         <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          className={`rounded-full px-3 py-1 text-xs font-bold ${
                             blog.published
                               ? "bg-green-100 text-green-700"
                               : "bg-yellow-100 text-yellow-700"
@@ -570,18 +608,18 @@ export default function AdminBlogsPage() {
                         </span>
                       </div>
 
-                      <p className="mt-1 text-sm text-blue-600">
+                      <p className="mt-1 text-sm font-semibold text-blue-600">
                         /blogs/{blog.slug}
                       </p>
 
                       {blog.category && (
-                        <p className="mt-2 text-sm font-medium text-black/60">
+                        <p className="mt-2 text-sm font-bold text-[#475569]">
                           Category: {blog.category}
                         </p>
                       )}
 
                       {blog.excerpt && (
-                        <p className="mt-3 max-w-3xl text-sm leading-6 text-black/60">
+                        <p className="mt-3 max-w-3xl text-sm font-medium leading-6 text-[#475569]">
                           {blog.excerpt}
                         </p>
                       )}
@@ -591,14 +629,14 @@ export default function AdminBlogsPage() {
                     <div className="flex flex-wrap gap-2">
                       <button
                         onClick={() => startEdit(blog)}
-                        className="rounded-xl border px-4 py-2 text-sm font-semibold hover:bg-gray-50"
+                        className="rounded-xl border border-[#cbd5e1] px-4 py-2 text-sm font-bold text-[#334155] transition hover:bg-[#f8fafc]"
                       >
                         Edit
                       </button>
 
                       <button
                         onClick={() => togglePublish(blog)}
-                        className={`rounded-xl px-4 py-2 text-sm font-semibold ${
+                        className={`rounded-xl px-4 py-2 text-sm font-bold ${
                           blog.published
                             ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
                             : "bg-green-100 text-green-800 hover:bg-green-200"
@@ -611,7 +649,7 @@ export default function AdminBlogsPage() {
 
                       <button
                         onClick={() => deleteBlog(blog)}
-                        className="rounded-xl bg-red-100 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-200"
+                        className="rounded-xl bg-red-100 px-4 py-2 text-sm font-bold text-red-700 transition hover:bg-red-200"
                       >
                         Delete
                       </button>

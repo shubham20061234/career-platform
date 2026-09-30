@@ -24,3 +24,46 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+html[data-admin-theme="dark"] body {
+  background: #0b0b0d;
+  color: #f5f5f5;
+}
+
+html[data-admin-theme="dark"] .admin-page {
+  background: #0b0b0d !important;
+  color: #f5f5f5 !important;
+}
+
+html[data-admin-theme="dark"] .admin-card {
+  background: #151518 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f5f5f5 !important;
+}
+
+html[data-admin-theme="dark"] .admin-muted {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html[data-admin-theme="dark"] .admin-border {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html[data-admin-font="geist"] body {
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+}
+
+html[data-admin-font="sans"] body {
+  font-family: "Helvetica Neue", Arial, sans-serif;
+}
+
+html[data-admin-font="arial"] body {
+  font-family: Arial, sans-serif;
+}
+
+html[data-admin-font="serif"] body {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+html[data-admin-font="mono"] body {
+  font-family: var(--font-geist-mono), monospace;
+}
